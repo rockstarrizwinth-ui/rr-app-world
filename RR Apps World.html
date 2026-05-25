@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RR World Apps</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#06080f;
+  --bg2:#0c101c;
+  --bg3:#111827;
+  --card:#131b2e;
+  --card2:#1a2540;
+  --accent:#00d4ff;
+  --accent2:#7c3aed;
+  --accent3:#f59e0b;
+  --text:#e2e8f0;
+  --text2:#94a3b8;
+  --text3:#475569;
+  --border:#1e293b;
+  --border2:#2d3f5c;
+  --danger:#ef4444;
+  --success:#22c55e;
+  --glow:0 0 20px rgba(0,212,255,0.15);
+}
+body{font-family:'Exo 2',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.star-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.star{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--d,3s) infinite alternate}
+@keyframes twinkle{0%{opacity:.1;transform:scale(1)}100%{opacity:.7;transform:scale(1.3)}}
+.scanline{position:fixed;inset:0;z-index:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,212,255,0.01) 2px,rgba(0,212,255,0.01) 4px)}
+ 
+/* PAGES */
+.page{display:none;min-height:100vh;position:relative;z-index:1}
+.page.active{display:block}
+ 
+/* NAV */
+nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;background:rgba(13,17,28,0.95);border-bottom:1px solid var(--border2);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100}
+.nav-logo{font-family:'Orbitron',monospace;font-weight:900;font-size:1.2rem;color:var(--accent);letter-spacing:2px;text-shadow:0 0 20px rgba(0,212,255,0.5)}
+.nav-logo span{color:var(--accent2)}
+.nav-right{display:flex;align-items:center;gap:1rem}
+.nav-user{display:flex;align-items:center;gap:.6rem;font-size:.85rem;color:var(--text2)}
+.nav-badge{background:var(--accent2);color:#fff;font-size:.65rem;padding:.2rem .5rem;border-radius:20px;font-weight:600;letter-spacing:.5px}
+.nav-badge.admin{background:var(--accent3);color:#000}
+.btn{cursor:pointer;border:none;border-radius:8px;font-family:'Exo 2',sans-serif;font-weight:500;transition:all .2s}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);padding:.45rem 1rem;font-size:.85rem}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#0099cc);color:#000;padding:.5rem 1.2rem;font-size:.85rem;font-weight:600}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(0,212,255,0.3)}
+.btn-danger{background:var(--danger);color:#fff;padding:.4rem .8rem;font-size:.8rem}
+.btn-danger:hover{background:#dc2626}
+.btn-success{background:var(--success);color:#000;padding:.5rem 1.2rem;font-size:.85rem;font-weight:600}
+.btn-success:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(34,197,94,0.3)}
+ 
+/* HERO */
+.hero{text-align:center;padding:5rem 2rem 3rem;position:relative}
+.hero-title{font-family:'Orbitron',monospace;font-size:clamp(2rem,6vw,4rem);font-weight:900;line-height:1.1;margin-bottom:1rem}
+.hero-title .line1{color:#fff}
+.hero-title .line2{color:var(--accent);text-shadow:0 0 30px rgba(0,212,255,0.4)}
+.hero-sub{color:var(--text2);font-size:1.05rem;max-width:500px;margin:0 auto 2.5rem;line-height:1.7}
+.hero-stats{display:flex;justify-content:center;gap:3rem;margin-top:2rem;flex-wrap:wrap}
+.stat{text-align:center}
+.stat-num{font-family:'Orbitron',monospace;font-size:1.8rem;font-weight:700;color:var(--accent)}
+.stat-label{font-size:.75rem;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-top:.2rem}
+ 
+/* SEARCH BAR */
+.search-bar{max-width:500px;margin:0 auto 3rem;padding:0 2rem;position:relative}
+.search-bar input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:.75rem 1rem .75rem 2.8rem;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.95rem;outline:none;transition:border .2s}
+.search-bar input:focus{border-color:var(--accent)}
+.search-bar .s-icon{position:absolute;left:2.9rem;top:50%;transform:translateY(-50%);color:var(--text3);font-size:1rem;pointer-events:none}
+.filter-row{display:flex;justify-content:center;gap:.5rem;flex-wrap:wrap;margin-bottom:2rem;padding:0 2rem}
+.filter-btn{background:var(--card);border:1px solid var(--border2);color:var(--text2);padding:.35rem .9rem;border-radius:20px;font-size:.8rem;cursor:pointer;transition:all .2s;font-family:'Exo 2',sans-serif}
+.filter-btn:hover,.filter-btn.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600}
+ 
+/* APP GRID */
+.apps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.5rem;padding:0 2rem 4rem;max-width:1200px;margin:0 auto}
+.app-card{background:var(--card);border:1px solid var(--border2);border-radius:16px;overflow:hidden;transition:all .25s;cursor:pointer;position:relative}
+.app-card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:var(--glow)}
+.app-card-img{width:100%;height:160px;object-fit:cover;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:3rem;color:var(--text3)}
+.app-card-img img{width:100%;height:100%;object-fit:cover}
+.app-card-body{padding:1rem}
+.app-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem}
+.app-name{font-weight:600;font-size:1rem;color:#fff;line-height:1.3}
+.app-version{font-size:.7rem;color:var(--accent);background:rgba(0,212,255,0.1);padding:.15rem .4rem;border-radius:4px;border:1px solid rgba(0,212,255,0.2);white-space:nowrap}
+.app-desc{font-size:.82rem;color:var(--text2);margin:.5rem 0 .8rem;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.app-meta{display:flex;align-items:center;justify-content:space-between;margin-top:.8rem}
+.app-cat{font-size:.72rem;color:var(--text3);background:var(--bg2);padding:.2rem .6rem;border-radius:6px}
+.app-rating{display:flex;align-items:center;gap:.25rem;font-size:.8rem;color:var(--accent3)}
+.app-footer{display:flex;gap:.5rem;padding:.75rem 1rem;background:var(--bg2);border-top:1px solid var(--border)}
+.btn-dl{flex:1;background:linear-gradient(135deg,var(--accent),#0099cc);color:#000;padding:.5rem;border-radius:8px;font-size:.82rem;font-weight:600;text-align:center;cursor:pointer;border:none;font-family:'Exo 2',sans-serif;transition:all .2s;text-decoration:none;display:block}
+.btn-dl:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(0,212,255,0.3)}
+.btn-info{background:var(--card);border:1px solid var(--border2);color:var(--text2);padding:.5rem .8rem;border-radius:8px;font-size:.82rem;cursor:pointer;transition:all .2s;font-family:'Exo 2',sans-serif}
+.btn-info:hover{border-color:var(--accent2);color:var(--accent2)}
+.new-badge{position:absolute;top:.75rem;left:.75rem;background:var(--success);color:#000;font-size:.65rem;font-weight:700;padding:.2rem .5rem;border-radius:4px;letter-spacing:.5px}
+.admin-controls{position:absolute;top:.75rem;right:.75rem;display:flex;gap:.4rem}
+.admin-btn-sm{background:rgba(0,0,0,0.7);border:1px solid var(--border2);color:var(--text2);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;transition:all .2s;backdrop-filter:blur(4px)}
+.admin-btn-sm:hover{border-color:var(--accent);color:var(--accent)}
+.admin-btn-sm.del:hover{border-color:var(--danger);color:var(--danger)}
+.empty-state{grid-column:1/-1;text-align:center;padding:4rem 2rem;color:var(--text3)}
+.empty-icon{font-size:3rem;margin-bottom:1rem}
+.empty-title{font-size:1.1rem;color:var(--text2);margin-bottom:.5rem}
+ 
+/* LOGIN PAGE */
+.login-page{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;position:relative;z-index:1}
+.login-box{background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:2.5rem;width:100%;max-width:400px;position:relative;overflow:hidden}
+.login-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent3))}
+.login-title{font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:700;color:var(--accent);margin-bottom:.3rem;letter-spacing:1px}
+.login-sub{font-size:.82rem;color:var(--text3);margin-bottom:2rem}
+.login-tabs{display:flex;gap:.5rem;margin-bottom:1.5rem}
+.login-tab{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:.6rem;text-align:center;cursor:pointer;font-size:.85rem;color:var(--text3);transition:all .2s;font-family:'Exo 2',sans-serif}
+.login-tab.active{background:var(--card2);border-color:var(--accent);color:var(--accent)}
+.form-group{margin-bottom:1rem}
+.form-label{display:block;font-size:.8rem;color:var(--text2);margin-bottom:.4rem;letter-spacing:.3px}
+.form-input{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:.65rem .9rem;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none;transition:border .2s}
+.form-input:focus{border-color:var(--accent)}
+.login-hint{font-size:.72rem;color:var(--text3);margin-top:1rem;text-align:center;line-height:1.5}
+.login-hint span{color:var(--accent);font-weight:600}
+.error-msg{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--danger);border-radius:8px;padding:.6rem .9rem;font-size:.82rem;margin-bottom:1rem;display:none}
+ 
+/* ADMIN PANEL */
+.admin-panel{padding:2rem;max-width:1000px;margin:0 auto}
+.panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:gap}
+.panel-title{font-family:'Orbitron',monospace;font-size:1.2rem;color:var(--accent);letter-spacing:1px}
+.admin-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:2rem}
+.a-stat{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:1.2rem;text-align:center}
+.a-stat-num{font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:700;color:var(--accent)}
+.a-stat-label{font-size:.75rem;color:var(--text3);margin-top:.2rem;text-transform:uppercase;letter-spacing:.5px}
+ 
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:20px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;position:relative}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:20px 20px 0 0}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:1.5rem 1.5rem 0}
+.modal-title{font-family:'Orbitron',monospace;font-size:1rem;color:var(--accent);letter-spacing:1px}
+.modal-close{background:var(--bg2);border:1px solid var(--border2);color:var(--text2);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{color:var(--danger);border-color:var(--danger)}
+.modal-body{padding:1.5rem}
+.app-detail-img{width:100%;height:200px;background:var(--bg2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:4rem;margin-bottom:1.2rem;overflow:hidden}
+.app-detail-img img{width:100%;height:100%;object-fit:cover}
+.detail-title{font-size:1.3rem;font-weight:700;color:#fff;margin-bottom:.3rem}
+.detail-meta{display:flex;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap}
+.detail-tag{font-size:.75rem;padding:.25rem .6rem;border-radius:6px;font-weight:500}
+.tag-cat{background:rgba(124,58,237,0.2);color:#a78bfa;border:1px solid rgba(124,58,237,0.3)}
+.tag-ver{background:rgba(0,212,255,0.1);color:var(--accent);border:1px solid rgba(0,212,255,0.2)}
+.tag-size{background:rgba(245,158,11,0.1);color:var(--accent3);border:1px solid rgba(245,158,11,0.2)}
+.detail-desc{color:var(--text2);font-size:.9rem;line-height:1.7;margin-bottom:1.5rem}
+.detail-dl-btn{width:100%;background:linear-gradient(135deg,var(--accent),#0099cc);color:#000;padding:.8rem;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;border:none;font-family:'Exo 2',sans-serif;transition:all .2s;text-decoration:none;display:block;text-align:center}
+.detail-dl-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,212,255,0.35)}
+.dl-count{font-size:.75rem;color:var(--text3);text-align:center;margin-top:.5rem}
+ 
+/* ADD APP FORM */
+.add-form{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:2rem;margin-bottom:2rem}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-textarea{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:.65rem .9rem;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none;resize:vertical;min-height:80px;transition:border .2s}
+.form-textarea:focus{border-color:var(--accent)}
+.form-select{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:.65rem .9rem;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.9rem;outline:none;cursor:pointer}
+.img-preview{width:100%;height:120px;background:var(--bg2);border:1px dashed var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:.85rem;overflow:hidden;margin-top:.4rem;cursor:pointer;transition:border .2s}
+.img-preview:hover{border-color:var(--accent)}
+.img-preview img{width:100%;height:100%;object-fit:cover}
+ 
+/* APP TABLE in admin */
+.apps-table{background:var(--card);border:1px solid var(--border2);border-radius:16px;overflow:hidden}
+.table-header{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 100px;gap:.5rem;padding:1rem 1.5rem;background:var(--bg2);font-size:.78rem;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+.table-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 100px;gap:.5rem;padding:.9rem 1.5rem;border-bottom:1px solid var(--border);align-items:center;transition:background .15s}
+.table-row:last-child{border-bottom:none}
+.table-row:hover{background:var(--card2)}
+.t-app-info{display:flex;align-items:center;gap:.75rem}
+.t-thumb{width:36px;height:36px;border-radius:8px;background:var(--bg2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.t-thumb img{width:100%;height:100%;object-fit:cover}
+.t-name{font-weight:500;font-size:.88rem;color:#fff}
+.t-cat{font-size:.75rem;color:var(--text3)}
+.t-cell{font-size:.83rem;color:var(--text2)}
+.t-actions{display:flex;gap:.4rem}
+ 
+/* TOAST */
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:.8rem 1.2rem;font-size:.85rem;color:var(--text);z-index:9999;transform:translateY(100px);opacity:0;transition:all .3s;display:flex;align-items:center;gap:.6rem;max-width:300px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-color:var(--success)}
+.toast.error{border-color:var(--danger)}
+.toast-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.toast.success .toast-dot{background:var(--success)}
+.toast.error .toast-dot{background:var(--danger)}
+.toast.info .toast-dot{background:var(--accent)}
+ 
+/* MARQUEE */
+.marquee-wrap{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:.4rem 0;overflow:hidden;position:relative}
+.marquee-inner{display:flex;gap:3rem;animation:marquee 20s linear infinite;white-space:nowrap}
+.marquee-inner:hover{animation-play-state:paused}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.marquee-item{font-size:.75rem;color:var(--text3);display:flex;align-items:center;gap:.4rem}
+.marquee-item span{color:var(--accent)}
+ 
+/* SCROLL TOP */
+.scroll-top{position:fixed;bottom:2rem;left:2rem;width:40px;height:40px;background:var(--card2);border:1px solid var(--border2);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--text2);transition:all .2s;z-index:500;opacity:0;pointer-events:none}
+.scroll-top.visible{opacity:1;pointer-events:all}
+.scroll-top:hover{border-color:var(--accent);color:var(--accent)}
+ 
+/* RESPONSIVE */
+@media(max-width:640px){
+  .form-row{grid-template-columns:1fr}
+  .table-header,.table-row{grid-template-columns:2fr 80px}
+  .t-ver,.t-dl,.t-size{display:none}
+  nav{padding:.8rem 1rem}
+  .apps-grid{padding:0 1rem 3rem}
+  .hero{padding:3rem 1rem 2rem}
+}
+ 
+/* DARK SCROLLBAR */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+ 
+.section-title{font-family:'Orbitron',monospace;font-size:.85rem;color:var(--text3);letter-spacing:2px;text-transform:uppercase;padding:0 2rem;margin-bottom:1.2rem;display:flex;align-items:center;gap:.8rem}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.section-title span{color:var(--accent)}
+</style>
+</head>
+<body>
+ 
+<!-- Star background -->
+<div class="star-bg" id="starBg"></div>
+<div class="scanline"></div>
+ 
+<!-- TOAST -->
+<div class="toast" id="toast"><div class="toast-dot"></div><span id="toastMsg"></span></div>
+ 
+<!-- SCROLL TOP -->
+<div class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</div>
+ 
+<!-- ==================== LOGIN PAGE ==================== -->
+<div id="loginPage" class="page active">
+  <div class="login-page">
+    <div style="text-align:center;margin-bottom:2rem">
+      <div style="font-family:'Orbitron',monospace;font-size:2rem;font-weight:900;color:var(--accent);text-shadow:0 0 30px rgba(0,212,255,0.4);letter-spacing:3px">RR WORLD</div>
+      <div style="font-family:'Orbitron',monospace;font-size:.9rem;color:var(--accent2);letter-spacing:4px;margin-top:.2rem">APPS</div>
+      <div style="font-size:.85rem;color:var(--text3);margin-top:.8rem">Your Gateway to Amazing Applications</div>
+    </div>
+    <div class="login-box">
+      <div class="login-title">SIGN IN</div>
+      <div class="login-sub">Access the RR World ecosystem</div>
+      <div class="login-tabs">
+        <button class="login-tab active" onclick="setLoginTab('user')">👤 User</button>
+        <button class="login-tab" onclick="setLoginTab('admin')">🔐 Admin</button>
+      </div>
+      <div class="error-msg" id="loginError">Invalid credentials. Please try again.</div>
+      <div class="form-group">
+        <label class="form-label">USERNAME</label>
+        <input class="form-input" id="loginUser" type="text" placeholder="Enter username" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label class="form-label">PASSWORD</label>
+        <input class="form-input" id="loginPass" type="password" placeholder="Enter password">
+      </div>
+      <button class="btn btn-primary" style="width:100%;padding:.7rem;font-size:.95rem;margin-top:.5rem" onclick="doLogin()">ENTER →</button>
+      <div class="login-hint" id="loginHint">
+        User: <span>user</span> / <span>user123</span>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<!-- ==================== MAIN APP PAGE ==================== -->
+<div id="mainPage" class="page">
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">RR<span>WORLD</span> APPS</div>
+    <div class="nav-right">
+      <div class="nav-user">
+        <span id="navUsername">User</span>
+        <span class="nav-badge" id="navBadge">USER</span>
+      </div>
+      <button class="btn btn-ghost" id="adminPanelBtn" onclick="showPage('adminPage')" style="display:none">⚙ Admin Panel</button>
+      <button class="btn btn-ghost" onclick="doLogout()">Logout</button>
+    </div>
+  </nav>
+ 
+  <!-- MARQUEE -->
+  <div class="marquee-wrap">
+    <div class="marquee-inner" id="marqueeInner"></div>
+  </div>
+ 
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-title">
+      <div class="line1">My Own Apps</div>
+      <div class="line2">RR WORLD APPS</div>
+    </div>
+    <div class="hero-sub">Discover, download and explore a curated collection of powerful applications crafted with precision.</div>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="document.querySelector('.search-bar input').focus()">🔍 Browse Apps</button>
+      <button class="btn btn-ghost" onclick="scrollToApps()">View All →</button>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num" id="totalApps">0</div><div class="stat-label">Apps Available</div></div>
+      <div class="stat"><div class="stat-num" id="totalDls">0</div><div class="stat-label">Downloads</div></div>
+      <div class="stat"><div class="stat-num" id="totalCats">0</div><div class="stat-label">Categories</div></div>
+    </div>
+  </div>
+ 
+  <!-- SEARCH -->
+  <div class="search-bar">
+    <span class="s-icon">🔍</span>
+    <input type="text" placeholder="Search apps..." id="searchInput" oninput="filterApps()">
+  </div>
+  <div class="filter-row" id="filterRow"></div>
+ 
+  <!-- APPS GRID -->
+  <div class="section-title" id="appsSection"><span>●</span> Available Apps</div>
+  <div class="apps-grid" id="appsGrid"></div>
+</div>
+ 
+<!-- ==================== ADMIN PAGE ==================== -->
+<div id="adminPage" class="page">
+  <nav>
+    <div class="nav-logo">RR<span>WORLD</span> APPS</div>
+    <div class="nav-right">
+      <button class="btn btn-ghost" onclick="showPage('mainPage')">← Back to Store</button>
+      <button class="btn btn-ghost" onclick="doLogout()">Logout</button>
+    </div>
+  </nav>
+  <div class="admin-panel">
+    <div class="panel-header">
+      <div class="panel-title">⚙ ADMIN PANEL</div>
+    </div>
+    <div class="admin-stats">
+      <div class="a-stat"><div class="a-stat-num" id="a-total">0</div><div class="a-stat-label">Total Apps</div></div>
+      <div class="a-stat"><div class="a-stat-num" id="a-dls">0</div><div class="a-stat-label">Downloads</div></div>
+      <div class="a-stat"><div class="a-stat-num" id="a-cats">0</div><div class="a-stat-label">Categories</div></div>
+      <div class="a-stat"><div class="a-stat-num" id="a-newest">—</div><div class="a-stat-label">Latest App</div></div>
+    </div>
+
+    <div class="section-title" style="padding:0;margin-bottom:1.2rem"><span>🔐</span> Manage Credentials</div>
+    <div class="add-form">
+      <div class="form-row">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Admin Username</label>
+          <input class="form-input" id="admin-username" placeholder="admin">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Admin Password</label>
+          <input class="form-input" id="admin-password" type="password" placeholder="••••••">
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:.8rem">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">User Username</label>
+          <input class="form-input" id="user-username" placeholder="user">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">User Password</label>
+          <input class="form-input" id="user-password" type="password" placeholder="••••••">
+        </div>
+      </div>
+      <div style="display:flex;gap:1rem;margin-top:1.2rem">
+        <button class="btn btn-success" onclick="saveCredentials()" style="flex:1;padding:.7rem">💾 Save Credentials</button>
+      </div>
+    </div>
+
+    <!-- ADD APP FORM -->
+    <div class="section-title" style="padding:0;margin-bottom:1.2rem"><span>+</span> Add New App</div>
+    <div class="add-form">
+      <div class="form-row">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">APP NAME *</label>
+          <input class="form-input" id="f-name" placeholder="e.g. Super Cleaner">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">VERSION</label>
+          <input class="form-input" id="f-version" placeholder="e.g. 2.1.0">
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:.8rem">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">CATEGORY</label>
+          <select class="form-select" id="f-cat">
+            <option>Utilities</option>
+            <option>Games</option>
+            <option>Social</option>
+            <option>Productivity</option>
+            <option>Media</option>
+            <option>Security</option>
+            <option>Education</option>
+            <option>Finance</option>
+            <option>Health</option>
+            <option>Tools</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">SIZE</label>
+          <input class="form-input" id="f-size" placeholder="e.g. 24 MB">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:.8rem">
+        <label class="form-label">DESCRIPTION</label>
+        <textarea class="form-textarea" id="f-desc" placeholder="Describe what this app does..."></textarea>
+      </div>
+      <div class="form-row" style="margin-top:.8rem">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">IMAGE URL</label>
+          <input class="form-input" id="f-img" placeholder="https://..." oninput="previewImg()">
+          <div class="img-preview" id="imgPreview" onclick="document.getElementById('f-img').focus()">
+            <span>🖼 Image Preview</span>
+          </div>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">DOWNLOAD LINK *</label>
+          <input class="form-input" id="f-link" placeholder="https://download-link...">
+          <div style="margin-top:.8rem">
+            <label class="form-label">EMOJI ICON (if no image)</label>
+            <input class="form-input" id="f-emoji" placeholder="e.g. 🚀" maxlength="2">
+          </div>
+          <div style="margin-top:.8rem">
+            <label class="form-label">MARK AS NEW?</label>
+            <select class="form-select" id="f-new"><option value="1">Yes</option><option value="0">No</option></select>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:1rem;margin-top:1.2rem">
+        <button class="btn btn-success" onclick="addApp()" style="flex:1;padding:.7rem">➕ Add App</button>
+        <button class="btn btn-ghost" onclick="clearForm()">Clear</button>
+      </div>
+    </div>
+ 
+    <!-- APPS TABLE -->
+    <div class="section-title" style="padding:0;margin-bottom:1.2rem"><span>📋</span> Manage Apps</div>
+    <div class="apps-table">
+      <div class="table-header">
+        <div>APP</div><div class="t-cat">CATEGORY</div><div class="t-ver">VERSION</div><div class="t-dl">DOWNLOADS</div><div>ACTIONS</div>
+      </div>
+      <div id="adminAppsList"></div>
+    </div>
+  </div>
+</div>
+ 
+<!-- ==================== APP DETAIL MODAL ==================== -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">APP DETAILS</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+ 
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">EDIT APP</div>
+      <button class="modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">APP NAME</label><input class="form-input" id="e-name"></div>
+      <div class="form-row">
+        <div class="form-group" style="margin:0"><label class="form-label">VERSION</label><input class="form-input" id="e-version"></div>
+        <div class="form-group" style="margin:0"><label class="form-label">SIZE</label><input class="form-input" id="e-size"></div>
+      </div>
+      <div class="form-group" style="margin-top:.8rem"><label class="form-label">CATEGORY</label>
+        <select class="form-select" id="e-cat">
+          <option>Utilities</option><option>Games</option><option>Social</option><option>Productivity</option><option>Media</option><option>Security</option><option>Education</option><option>Finance</option><option>Health</option><option>Tools</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">DESCRIPTION</label><textarea class="form-textarea" id="e-desc"></textarea></div>
+      <div class="form-group"><label class="form-label">IMAGE URL</label><input class="form-input" id="e-img"></div>
+      <div class="form-group"><label class="form-label">DOWNLOAD LINK</label><input class="form-input" id="e-link"></div>
+      <div class="form-group"><label class="form-label">EMOJI ICON</label><input class="form-input" id="e-emoji" maxlength="2"></div>
+      <div style="display:flex;gap:1rem;margin-top:1rem">
+        <button class="btn btn-success" onclick="saveEdit()" style="flex:1;padding:.7rem">💾 Save Changes</button>
+        <button class="btn btn-ghost" onclick="closeEditModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<script type="module">
+  // Firebase SDKs
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCJOe7O40IzqE63CR8Y9xpF9GUX3jZLkAw",
+    authDomain: "lovers-check.firebaseapp.com",
+    projectId: "lovers-check",
+    storageBucket: "lovers-check.firebasestorage.app",
+    messagingSenderId: "812134181983",
+    appId: "1:812134181983:web:ce6d5da4dd9c4da265ffea",
+    measurementId: "G-BJ9B03D7N6"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+ 
+<script>
+// ========== DATA ==========
+const DEFAULT_CREDS = {
+  admin:{username:'admin', password:'admin123'},
+  user:{username:'user', password:'user123'}
+};
+let CREDENTIALS = null;
+ 
+let currentUser = null;
+let isAdmin = false;
+let editingId = null;
+let activeFilter = 'All';
+ 
+function getCreds(){
+  try{return JSON.parse(localStorage.getItem('rr_creds'))||DEFAULT_CREDS;}catch{return DEFAULT_CREDS;}
+}
+function saveCreds(c){
+  localStorage.setItem('rr_creds', JSON.stringify(c));
+  CREDENTIALS = c;
+}
+function initCreds(){
+  const creds = getCreds();
+  saveCreds(creds);
+}
+function renderAdminCredentials(){
+  const creds = CREDENTIALS || getCreds();
+  document.getElementById('admin-username').value = creds.admin.username;
+  document.getElementById('admin-password').value = creds.admin.password;
+  document.getElementById('user-username').value = creds.user.username;
+  document.getElementById('user-password').value = creds.user.password;
+}
+function saveCredentials(){
+  const adminUsername = document.getElementById('admin-username').value.trim();
+  const adminPassword = document.getElementById('admin-password').value;
+  const userUsername = document.getElementById('user-username').value.trim();
+  const userPassword = document.getElementById('user-password').value;
+  if(!adminUsername||!adminPassword||!userUsername||!userPassword){
+    toast('All credential fields are required.','error');
+    return;
+  }
+  saveCreds({
+    admin:{username:adminUsername,password:adminPassword},
+    user:{username:userUsername,password:userPassword}
+  });
+  toast('Credentials updated successfully!','success');
+}
+ 
+function getApps(){
+  try{return JSON.parse(localStorage.getItem('rr_apps')||'[]')}catch{return[]}
+}
+function saveApps(a){localStorage.setItem('rr_apps',JSON.stringify(a))}
+ 
+// Default apps
+const DEFAULT_APPS = [
+  {id:1,name:'RR Cleaner Pro',version:'3.2.1',cat:'Utilities',desc:'Boost your device performance with one tap. Clears cache, junk files and boosts RAM speed.',img:'',emoji:'🧹',link:'#',size:'18 MB',downloads:1240,isNew:true,date:Date.now()-86400000},
+  {id:2,name:'RR Photo Editor',version:'2.0.5',cat:'Media',desc:'Professional photo editing with 200+ filters, AI enhancements and one-click magic fixes.',img:'',emoji:'🎨',link:'#',size:'45 MB',downloads:3821,isNew:false,date:Date.now()-172800000},
+  {id:3,name:'RR VPN Shield',version:'1.9.3',cat:'Security',desc:'Military-grade encryption to protect your privacy. Connect to 50+ server locations globally.',img:'',emoji:'🛡️',link:'#',size:'22 MB',downloads:5630,isNew:false,date:Date.now()-259200000},
+  {id:4,name:'RR File Manager',version:'4.1.0',cat:'Tools',desc:'The ultimate file manager with cloud sync, ZIP support, and seamless multi-device access.',img:'',emoji:'📁',link:'#',size:'12 MB',downloads:2104,isNew:true,date:Date.now()-345600000},
+  {id:5,name:'RR Music Player',version:'2.3.0',cat:'Media',desc:'Experience music like never before. Equalizer, bass boost, crossfade and offline playback.',img:'',emoji:'🎵',link:'#',size:'30 MB',downloads:8921,isNew:false,date:Date.now()-432000000},
+  {id:6,name:'RR Study Buddy',version:'1.2.0',cat:'Education',desc:'Smart flashcards, Pomodoro timer and progress tracking to supercharge your learning.',img:'',emoji:'📚',link:'#',size:'8 MB',downloads:671,isNew:true,date:Date.now()-518400000},
+];
+ 
+function initApps(){
+  if(!localStorage.getItem('rr_apps')){saveApps(DEFAULT_APPS)}
+}
+ 
+// ========== AUTH ==========
+let loginMode = 'user';
+function setLoginTab(m){
+  loginMode=m;
+  document.querySelectorAll('.login-tab').forEach((t,i)=>{
+    t.classList.toggle('active',(i===0&&m==='user')||(i===1&&m==='admin'));
+  });
+  document.getElementById('loginHint').innerHTML = m==='admin'
+    ? ''
+    : 'User: <span>user</span> / <span>user123</span>';
+  document.getElementById('loginError').style.display='none';
+}
+ 
+function doLogin(){
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value;
+  document.getElementById('loginError').style.display='none';
+  if(loginMode==='admin'){
+    if(u===CREDENTIALS.admin.username&&p===CREDENTIALS.admin.password){
+      currentUser=u; isAdmin=true; enterApp();
+    } else { document.getElementById('loginError').style.display='block'; shake('loginPass'); }
+  } else {
+    if(u===CREDENTIALS.user.username&&p===CREDENTIALS.user.password){
+      currentUser=u; isAdmin=false; enterApp();
+    } else { document.getElementById('loginError').style.display='block'; shake('loginPass'); }
+  }
+}
+ 
+function shake(id){
+  const el=document.getElementById(id);
+  el.style.animation='none';
+  el.style.borderColor='var(--danger)';
+  setTimeout(()=>{el.style.borderColor='';},1000);
+}
+ 
+function enterApp(){
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('navUsername').textContent=currentUser;
+  const badge=document.getElementById('navBadge');
+  badge.textContent=isAdmin?'ADMIN':'USER';
+  badge.className='nav-badge'+(isAdmin?' admin':'');
+  document.getElementById('adminPanelBtn').style.display=isAdmin?'inline-flex':'none';
+  showPage('mainPage');
+  renderApps();
+  updateStats();
+  updateMarquee();
+  toast('Welcome back, '+currentUser+'! 👋','success');
+}
+ 
+function doLogout(){
+  currentUser=null; isAdmin=false;
+  showPage('loginPage');
+}
+ 
+// ========== PAGES ==========
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='adminPage'){renderAdminTable();updateAdminStats();renderAdminCredentials();}
+  if(id==='mainPage'){renderApps();updateStats();}
+  window.scrollTo(0,0);
+}
+ 
+// ========== RENDER APPS ==========
+function renderApps(){
+  const apps=getApps();
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const cats=['All',...new Set(apps.map(a=>a.cat))];
+  const filterRow=document.getElementById('filterRow');
+  filterRow.innerHTML=cats.map(c=>`<button class="filter-btn ${activeFilter===c?'active':''}" onclick="setFilter('${c}')">${c}</button>`).join('');
+ 
+  let filtered=apps;
+  if(activeFilter!=='All') filtered=filtered.filter(a=>a.cat===activeFilter);
+  if(q) filtered=filtered.filter(a=>a.name.toLowerCase().includes(q)||a.desc.toLowerCase().includes(q)||a.cat.toLowerCase().includes(q));
+ 
+  const grid=document.getElementById('appsGrid');
+  if(!filtered.length){
+    grid.innerHTML=`<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">No apps found</div><div>Try a different search or category</div></div>`;
+    return;
+  }
+  grid.innerHTML=filtered.map(a=>appCard(a)).join('');
+}
+ 
+function appCard(a){
+  const imgHtml=a.img
+    ? `<img src="${a.img}" alt="${a.name}" onerror="this.style.display='none'">`
+    : `<span style="font-size:2.5rem">${a.emoji||'📱'}</span>`;
+  const stars='★'.repeat(Math.min(5,Math.floor(4+(a.downloads/10000))));
+  return `
+  <div class="app-card" id="card-${a.id}">
+    ${a.isNew?'<div class="new-badge">NEW</div>':''}
+    ${isAdmin?`<div class="admin-controls"><button class="admin-btn-sm" onclick="openEdit(${a.id},event)" title="Edit">✏️</button><button class="admin-btn-sm del" onclick="deleteApp(${a.id},event)" title="Delete">🗑</button></div>`:''}
+    <div class="app-card-img">${imgHtml}</div>
+    <div class="app-card-body">
+      <div class="app-card-top">
+        <div class="app-name">${a.name}</div>
+        ${a.version?`<div class="app-version">v${a.version}</div>`:''}
+      </div>
+      <div class="app-desc">${a.desc}</div>
+      <div class="app-meta">
+        <div class="app-cat">📂 ${a.cat}</div>
+        <div class="app-rating">${stars} <span style="color:var(--text3);font-size:.72rem">(${a.downloads.toLocaleString()})</span></div>
+      </div>
+    </div>
+    <div class="app-footer">
+      <a class="btn-dl" href="${a.link||'#'}" ${a.link&&a.link!=='#'?'target="_blank"':''} onclick="countDownload(${a.id})">⬇ Download</a>
+      <button class="btn-info" onclick="openDetail(${a.id})">ℹ</button>
+    </div>
+  </div>`;
+}
+ 
+function setFilter(cat){
+  activeFilter=cat;
+  renderApps();
+}
+ 
+function filterApps(){renderApps();}
+ 
+function scrollToApps(){
+  document.getElementById('appsSection').scrollIntoView({behavior:'smooth'});
+}
+ 
+// ========== STATS ==========
+function updateStats(){
+  const apps=getApps();
+  document.getElementById('totalApps').textContent=apps.length;
+  document.getElementById('totalDls').textContent=apps.reduce((s,a)=>s+a.downloads,0).toLocaleString();
+  document.getElementById('totalCats').textContent=new Set(apps.map(a=>a.cat)).size;
+}
+ 
+function updateAdminStats(){
+  const apps=getApps();
+  document.getElementById('a-total').textContent=apps.length;
+  document.getElementById('a-dls').textContent=apps.reduce((s,a)=>s+a.downloads,0).toLocaleString();
+  document.getElementById('a-cats').textContent=new Set(apps.map(a=>a.cat)).size;
+  const newest=apps.sort((a,b)=>b.date-a.date)[0];
+  document.getElementById('a-newest').textContent=newest?newest.name.split(' ')[0]+'…':'—';
+}
+ 
+// ========== MARQUEE ==========
+function updateMarquee(){
+  const apps=getApps().slice(0,8);
+  const items=apps.map(a=>`<div class="marquee-item"><span>${a.emoji||'📱'}</span> ${a.name} — <span>${a.downloads.toLocaleString()} downloads</span></div>`).join('');
+  const m=document.getElementById('marqueeInner');
+  m.innerHTML=items+items;
+}
+ 
+// ========== DOWNLOAD COUNT ==========
+function countDownload(id){
+  const apps=getApps();
+  const i=apps.findIndex(a=>a.id===id);
+  if(i>-1){apps[i].downloads++;saveApps(apps);}
+  setTimeout(()=>{updateStats();updateMarquee();},300);
+}
+ 
+// ========== DETAIL MODAL ==========
+function openDetail(id){
+  const a=getApps().find(x=>x.id===id);
+  if(!a)return;
+  const imgHtml=a.img
+    ?`<img src="${a.img}" alt="${a.name}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">`
+    :`<span style="font-size:4rem">${a.emoji||'📱'}</span>`;
+  document.getElementById('modalBody').innerHTML=`
+    <div class="app-detail-img">${imgHtml}</div>
+    <div class="detail-title">${a.name}</div>
+    <div class="detail-meta">
+      ${a.cat?`<span class="detail-tag tag-cat">📂 ${a.cat}</span>`:''}
+      ${a.version?`<span class="detail-tag tag-ver">v${a.version}</span>`:''}
+      ${a.size?`<span class="detail-tag tag-size">💾 ${a.size}</span>`:''}
+    </div>
+    <div class="detail-desc">${a.desc||'No description available.'}</div>
+    <a class="detail-dl-btn" href="${a.link||'#'}" ${a.link&&a.link!=='#'?'target="_blank"':''} onclick="countDownload(${a.id})">⬇ Download Now</a>
+    <div class="dl-count">📥 ${a.downloads.toLocaleString()} total downloads</div>
+  `;
+  document.getElementById('detailModal').classList.add('open');
+}
+ 
+function closeModal(){document.getElementById('detailModal').classList.remove('open');}
+ 
+// ========== ADD APP ==========
+function addApp(){
+  const name=document.getElementById('f-name').value.trim();
+  const link=document.getElementById('f-link').value.trim();
+  if(!name){toast('App name is required!','error');return;}
+  if(!link){toast('Download link is required!','error');return;}
+  const apps=getApps();
+  const newApp={
+    id:Date.now(),
+    name,
+    version:document.getElementById('f-version').value.trim()||'1.0',
+    cat:document.getElementById('f-cat').value,
+    desc:document.getElementById('f-desc').value.trim(),
+    img:document.getElementById('f-img').value.trim(),
+    emoji:document.getElementById('f-emoji').value.trim()||'📱',
+    link,
+    size:document.getElementById('f-size').value.trim()||'N/A',
+    downloads:0,
+    isNew:document.getElementById('f-new').value==='1',
+    date:Date.now()
+  };
+  apps.unshift(newApp);
+  saveApps(apps);
+  clearForm();
+  renderAdminTable();
+  updateAdminStats();
+  toast('App "'+name+'" added successfully! 🎉','success');
+}
+ 
+function clearForm(){
+  ['f-name','f-version','f-desc','f-img','f-link','f-emoji','f-size'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-new').value='1';
+  document.getElementById('f-cat').value='Utilities';
+  document.getElementById('imgPreview').innerHTML='<span>🖼 Image Preview</span>';
+}
+ 
+function previewImg(){
+  const url=document.getElementById('f-img').value.trim();
+  const prev=document.getElementById('imgPreview');
+  if(url){
+    prev.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover" onerror="this.innerHTML='❌ Invalid URL'">`;
+  } else {
+    prev.innerHTML='<span>🖼 Image Preview</span>';
+  }
+}
+ 
+// ========== EDIT APP ==========
+function openEdit(id,e){
+  if(e)e.stopPropagation();
+  const a=getApps().find(x=>x.id===id);
+  if(!a)return;
+  editingId=id;
+  document.getElementById('e-name').value=a.name;
+  document.getElementById('e-version').value=a.version||'';
+  document.getElementById('e-size').value=a.size||'';
+  document.getElementById('e-cat').value=a.cat;
+  document.getElementById('e-desc').value=a.desc||'';
+  document.getElementById('e-img').value=a.img||'';
+  document.getElementById('e-link').value=a.link||'';
+  document.getElementById('e-emoji').value=a.emoji||'';
+  document.getElementById('editModal').classList.add('open');
+}
+ 
+function closeEditModal(){document.getElementById('editModal').classList.remove('open');editingId=null;}
+ 
+function saveEdit(){
+  const apps=getApps();
+  const i=apps.findIndex(a=>a.id===editingId);
+  if(i<0)return;
+  apps[i]={...apps[i],
+    name:document.getElementById('e-name').value.trim()||apps[i].name,
+    version:document.getElementById('e-version').value.trim(),
+    size:document.getElementById('e-size').value.trim(),
+    cat:document.getElementById('e-cat').value,
+    desc:document.getElementById('e-desc').value.trim(),
+    img:document.getElementById('e-img').value.trim(),
+    link:document.getElementById('e-link').value.trim(),
+    emoji:document.getElementById('e-emoji').value.trim()||apps[i].emoji,
+  };
+  saveApps(apps);
+  closeEditModal();
+  renderAdminTable();
+  updateAdminStats();
+  toast('App updated successfully! ✅','success');
+}
+ 
+// ========== DELETE APP ==========
+function deleteApp(id,e){
+  if(e)e.stopPropagation();
+  if(!confirm('Delete this app permanently?'))return;
+  const apps=getApps().filter(a=>a.id!==id);
+  saveApps(apps);
+  renderAdminTable();
+  updateAdminStats();
+  toast('App deleted.','info');
+}
+ 
+// ========== ADMIN TABLE ==========
+function renderAdminTable(){
+  const apps=getApps();
+  const list=document.getElementById('adminAppsList');
+  if(!apps.length){
+    list.innerHTML='<div style="padding:2rem;text-align:center;color:var(--text3)">No apps yet. Add your first app above!</div>';
+    return;
+  }
+  list.innerHTML=apps.map(a=>`
+    <div class="table-row">
+      <div class="t-app-info">
+        <div class="t-thumb">${a.img?`<img src="${a.img}" onerror="this.style.display='none'">`:''}${a.emoji||'📱'}</div>
+        <div><div class="t-name">${a.name}</div><div class="t-cat">${a.cat}</div></div>
+      </div>
+      <div class="t-cell t-cat">${a.cat}</div>
+      <div class="t-cell t-ver">v${a.version||'—'}</div>
+      <div class="t-cell t-dl">📥 ${a.downloads.toLocaleString()}</div>
+      <div class="t-actions">
+        <button class="admin-btn-sm" onclick="openEdit(${a.id},event)" title="Edit">✏️</button>
+        <button class="admin-btn-sm del" onclick="deleteApp(${a.id},event)" title="Delete">🗑</button>
+      </div>
+    </div>
+  `).join('');
+}
+ 
+// ========== TOAST ==========
+function toast(msg,type='info'){
+  const el=document.getElementById('toast');
+  document.getElementById('toastMsg').textContent=msg;
+  el.className='toast '+type;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.classList.remove('show'),3000);
+}
+ 
+// ========== STARS ==========
+function makeStars(){
+  const bg=document.getElementById('starBg');
+  for(let i=0;i<80;i++){
+    const s=document.createElement('div');
+    s.className='star';
+    const size=Math.random()*2+1;
+    s.style.cssText=`width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s`;
+    bg.appendChild(s);
+  }
+}
+ 
+// ========== SCROLL TOP ==========
+window.addEventListener('scroll',()=>{
+  document.getElementById('scrollTop').classList.toggle('visible',window.scrollY>400);
+});
+ 
+// ========== KEYBOARD ==========
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.getElementById('loginPage').classList.contains('active'))doLogin();
+  if(e.key==='Escape'){closeModal();closeEditModal();}
+});
+ 
+// Close modals on backdrop click
+document.getElementById('detailModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.getElementById('editModal').addEventListener('click',function(e){if(e.target===this)closeEditModal();});
+ 
+// ========== INIT ==========
+initCreds();
+initApps();
+makeStars();
+</script>
+</body>
+</html>
